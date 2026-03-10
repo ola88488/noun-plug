@@ -2,107 +2,100 @@ import streamlit as st
 import time
 
 # --- APP CONFIG ---
-st.set_page_config(page_title="NOUN Plug: The AI Academy", layout="wide", page_icon="🎓")
+st.set_page_config(page_title="NOUN Plug Academy", layout="wide", page_icon="🎓")
+
+# --- DATABASE: THE ACTUAL LESSONS (Pre-loaded) ---
+ACADEMY_CONTENT = {
+    "Sciences": {
+        "CIT 101: Computer In Society": {
+            "Module 1: History": "Computers evolved through 5 generations. 1st Gen used Vacuum Tubes (1940s), while modern computers use Microprocessors. Key takeaway: Every generation got smaller, faster, and cheaper.",
+            "Module 2: Hardware": "Hardware is the physical part. Input (Keyboard), Output (Monitor), Storage (Hard Drive). The CPU is the brain.",
+            "Quiz": [
+                {"q": "What did 1st Generation computers use?", "o": ["Transistors", "Vacuum Tubes", "Chips"], "a": "Vacuum Tubes"},
+                {"q": "Which is an output device?", "o": ["Mouse", "Printer", "Keyboard"], "a": "Printer"}
+            ]
+        }
+    },
+    "Law": {
+        "LAW 111: Legal Methods": {
+            "Module 1: Sources of Law": "Nigerian law comes from the Constitution, Legislation, and Judicial Precedents. The Constitution is supreme.",
+            "Module 2: Court Hierarchy": "The Supreme Court is at the top, followed by the Court of Appeal, then High Courts.",
+            "Quiz": [
+                {"q": "Which law is supreme in Nigeria?", "o": ["Customary Law", "The Constitution", "Religious Law"], "a": "The Constitution"},
+                {"q": "What is the highest court in Nigeria?", "o": ["High Court", "Supreme Court", "Magistrate Court"], "a": "Supreme Court"}
+            ]
+        }
+    }
+}
 
 # --- INITIALIZE STATE ---
 if 'onboarded' not in st.session_state:
     st.session_state.onboarded = False
 
-# --- SIDEBAR (Always Visible) ---
+# --- SIDEBAR ACCESS ---
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/brain.png", width=80)
-    st.title("NOUN Plug PRO")
-    access_code = st.text_input("Unlock Full Academy (Code):", type="password")
-    
+    st.title("🔌 NOUN Plug")
+    access_code = st.text_input("Enter Access Code:", type="password")
     st.divider()
     st.write("### 🆘 Support")
-    st.link_button("💬 Message Admin", "https://wa.me/2348148849127")
+    st.link_button("💬 WhatsApp Admin", "https://wa.me/2348148849127")
 
-# --- LOGIC: WHAT THE USER SEES ---
-
+# --- APP LOGIC ---
 if access_code != "PLUG2026":
-    # This is the "Public" face of the app
-    st.title("🎓 Welcome to NOUN Plug AI")
-    st.subheader("Your Personal Cyber-Security Style Learning Path")
-    st.image("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000", caption="Level up your grades with AI")
-    
-    st.warning("🔒 Enter your ₦1,000 Access Code in the sidebar to enter your classroom.")
-    st.link_button("💳 Get My Access Code Now", "https://selar.co/your-link")
-
+    st.title("🎓 NOUN Plug: The 100L Academy")
+    st.subheader("Professional Study Path for NOUN Students")
+    st.image("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1000", caption="Your classroom is waiting.")
+    st.error("🔒 Enter your code in the sidebar to unlock your Faculty and Courses.")
 else:
-    # --- PRIVATE CLASSROOM (Once code is entered) ---
-    
     if not st.session_state.onboarded:
-        st.title("🚀 Creating Your Profile...")
-        name = st.text_input("Enter your Full Name:", placeholder="e.g. Olabamidele Ibrahim")
-        fac = st.selectbox("Your Faculty:", ["Sciences", "Law", "Management", "Social Sciences", "Arts"])
-        lvl = st.radio("Current Level:", ["100L", "200L", "300L", "MSc/PhD"], horizontal=True)
+        # STEP 1: WELCOME & IDENTITY
+        st.title("👋 Welcome to the Academy")
+        st.session_state.user_name = st.text_input("What is your name, Student?")
+        st.session_state.faculty = st.selectbox("Select Your Faculty:", list(ACADEMY_CONTENT.keys()))
         
-        if st.button("Initialize My Classroom →"):
-            if name:
-                st.session_state.user_name = name
-                st.session_state.faculty = fac
-                st.session_state.level = lvl
+        if st.button("Initialize My Learning Path"):
+            if st.session_state.user_name:
                 st.session_state.onboarded = True
                 st.balloons()
                 st.rerun()
-            else:
-                st.error("We need your name to personalize your certificates!")
-
     else:
-        # --- THE MAIN TEACHING DASHBOARD ---
-        st.title(f"👨‍💻 Cadet {st.session_state.user_name}: Active")
-        st.write(f"**Current Sector:** {st.session_state.faculty} | **Rank:** {st.session_state.level}")
+        # STEP 2: THE PROFESSIONAL DASHBOARD
+        st.title(f"📖 {st.session_state.user_name}'s Classroom")
+        st.write(f"**Faculty:** {st.session_state.faculty} | **Status:** Active Student")
+        
+        # Course Selection
+        courses = list(ACADEMY_CONTENT[st.session_state.faculty].keys())
+        selected_course = st.selectbox("Choose a Course to Study:", courses)
         
         st.divider()
         
-        # Dashboard Layout
-        col1, col2 = st.columns([1, 2])
+        # THE LEARNING INTERFACE
+        col1, col2 = st.columns([1, 1])
+        
+        content = ACADEMY_CONTENT[st.session_state.faculty][selected_course]
         
         with col1:
-            st.subheader("🛠️ Course Ops")
-            # Dynamic courses based on faculty
-            courses = {
-                "Sciences": ["CIT 101", "MTH 101", "PHY 191"],
-                "Law": ["LAW 111", "LAW 113", "GST 101"],
-                "Management": ["ACC 101", "BUS 105", "ECO 121"]
-            }.get(st.session_state.faculty, ["GST 101", "GST 102"])
-            
-            chosen_course = st.selectbox("Select Target Course:", courses)
-            
-            st.write("---")
-            st.write("### 🌩️ AI Upload")
-            st.write("Paste your course material to generate the lesson:")
-            material = st.text_area("Drop PDF text here...", height=150)
-            generate = st.button("Analyze & Teach Me")
+            st.header("📋 Lesson Plan")
+            # Modules are listed like a real online course
+            for module in content.keys():
+                if module != "Quiz":
+                    with st.expander(f"🔹 {module}"):
+                        st.write(content[module])
+                        st.button(f"Mark {module} as Completed", key=module)
 
         with col2:
-            if 'teaching' in st.session_state or generate:
-                st.session_state.teaching = True
-                st.header(f"📖 Lesson: {chosen_course}")
-                
-                tab1, tab2 = st.tabs(["🚀 Automated Study Plan", "🧠 Interactive Mock Exam"])
-                
-                with tab1:
-                    st.success(f"AI Analysis Complete for {st.session_state.user_name}")
-                    st.markdown("""
-                    ### 🎯 Your 24-Hour Blitz Plan
-                    * **0-2 Hours:** Focus on the 'Introduction' and 'Definition' sections.
-                    * **2-6 Hours:** Study the 3 key pillars mentioned in your text.
-                    * **6-10 Hours:** Attempt the Mock Exam in Tab 2.
-                    """)
-                    
-                with tab2:
-                    st.subheader("Final Readiness Check")
-                    st.write("The AI has prepared these questions based on your material:")
-                    st.info("Question 1: Define the core principle of the first paragraph.")
-                    st.radio("Your Answer:", ["Correct Definition", "Partial Definition", "Incorrect"], key="q1")
-                    if st.button("Submit for Grading"):
-                        st.write("Analysis in progress...")
-            else:
-                st.info("Select a course and paste your material on the left to begin your mission.")
+            st.header("✍️ Module Mock Exam")
+            st.write(f"Test your knowledge on {selected_course}")
+            
+            for i, item in enumerate(content["Quiz"]):
+                st.write(f"**Q{i+1}: {item['q']}**")
+                ans = st.radio("Select Answer:", item['o'], key=f"quiz_{i}")
+                if st.button(f"Check Q{i+1}"):
+                    if ans == item['a']:
+                        st.success("Correct! Well done.")
+                    else:
+                        st.error(f"Wrong. The answer is {item['a']}")
 
-        # Logout Option
-        if st.sidebar.button("Log Out / Reset System"):
+        if st.sidebar.button("Log Out"):
             st.session_state.onboarded = False
             st.rerun()
