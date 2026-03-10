@@ -1,101 +1,100 @@
 import streamlit as st
-import time
 
-# --- APP CONFIG ---
-st.set_page_config(page_title="NOUN Plug Academy", layout="wide", page_icon="🎓")
-
-# --- DATABASE: THE ACTUAL LESSONS (Pre-loaded) ---
-ACADEMY_CONTENT = {
-    "Sciences": {
-        "CIT 101: Computer In Society": {
-            "Module 1: History": "Computers evolved through 5 generations. 1st Gen used Vacuum Tubes (1940s), while modern computers use Microprocessors. Key takeaway: Every generation got smaller, faster, and cheaper.",
-            "Module 2: Hardware": "Hardware is the physical part. Input (Keyboard), Output (Monitor), Storage (Hard Drive). The CPU is the brain.",
-            "Quiz": [
-                {"q": "What did 1st Generation computers use?", "o": ["Transistors", "Vacuum Tubes", "Chips"], "a": "Vacuum Tubes"},
-                {"q": "Which is an output device?", "o": ["Mouse", "Printer", "Keyboard"], "a": "Printer"}
-            ]
-        }
+# --- NOUN MASTER DATABASE 2026 ---
+# This is a map of the entire university structure
+NOUN_DATABASE = {
+    "Faculty of Sciences": {
+        "Computer Science": ["CIT 101", "CIT 102", "MTH 101", "STT 102", "CIT 211"],
+        "Information Technology": ["CIT 101", "CIT 104", "MTH 102"],
+        "Biology": ["BIO 101", "BIO 102", "CHM 101"],
+        "Mathematics": ["MTH 101", "MTH 102", "STT 102"]
     },
-    "Law": {
-        "LAW 111: Legal Methods": {
-            "Module 1: Sources of Law": "Nigerian law comes from the Constitution, Legislation, and Judicial Precedents. The Constitution is supreme.",
-            "Module 2: Court Hierarchy": "The Supreme Court is at the top, followed by the Court of Appeal, then High Courts.",
-            "Quiz": [
-                {"q": "Which law is supreme in Nigeria?", "o": ["Customary Law", "The Constitution", "Religious Law"], "a": "The Constitution"},
-                {"q": "What is the highest court in Nigeria?", "o": ["High Court", "Supreme Court", "Magistrate Court"], "a": "Supreme Court"}
-            ]
-        }
+    "Faculty of Law": {
+        "LL.B Law": ["LAW 111", "LAW 113", "LAW 101", "GST 101", "LAW 211"]
+    },
+    "Faculty of Management Sciences": {
+        "Accounting": ["ACC 101", "ACC 102", "ECO 121", "BUS 105"],
+        "Business Administration": ["BUS 105", "BUS 106", "ECO 121"],
+        "Public Administration": ["PAD 101", "PAD 102", "GST 101"]
+    },
+    "Faculty of Social Sciences": {
+        "Mass Communication": ["MAC 111", "MAC 113", "MAC 115", "GST 101"],
+        "Criminology & Security Studies": ["CSS 111", "CSS 121", "PCR 111"],
+        "Political Science": ["POL 111", "POL 121", "GST 107"]
+    },
+    "Faculty of Health Sciences": {
+        "Nursing Science": ["NSC 101", "PHS 101", "BIO 191"],
+        "Public Health": ["PHS 101", "PHS 102", "GST 101"]
     }
 }
 
-# --- INITIALIZE STATE ---
-if 'onboarded' not in st.session_state:
-    st.session_state.onboarded = False
+# --- APP INTERFACE ---
+st.set_page_config(page_title="NOUN Plug: The Academy", layout="wide")
 
-# --- SIDEBAR ACCESS ---
+# Access Security
 with st.sidebar:
-    st.title("🔌 NOUN Plug")
-    access_code = st.text_input("Enter Access Code:", type="password")
-    st.divider()
-    st.write("### 🆘 Support")
-    st.link_button("💬 WhatsApp Admin", "https://wa.me/2348148849127")
+    st.title("🔑 Admin Lock")
+    code = st.text_input("Enter 1k Access Code:", type="password")
+    if code != "PLUG2026":
+        st.warning("Locked. Please get your code from Ibrahim.")
+        st.stop()
+    st.success("Authorized")
+    st.link_button("💬 Support", "https://wa.me/2348148849127")
 
-# --- APP LOGIC ---
-if access_code != "PLUG2026":
-    st.title("🎓 NOUN Plug: The 100L Academy")
-    st.subheader("Professional Study Path for NOUN Students")
-    st.image("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1000", caption="Your classroom is waiting.")
-    st.error("🔒 Enter your code in the sidebar to unlock your Faculty and Courses.")
+# --- SMART ONBOARDING ---
+st.title("🎓 NOUN Digital Academy")
+
+if 'step' not in st.session_state:
+    st.session_state.step = "welcome"
+
+if st.session_state.step == "welcome":
+    name = st.text_input("What is your name?")
+    fac = st.selectbox("Select Your Faculty:", list(NOUN_DATABASE.keys()))
+    
+    # This is the "Magic" part: It filters departments based on the Faculty
+    dept_list = list(NOUN_DATABASE[fac].keys())
+    dept = st.selectbox("Select Your Department:", dept_list)
+    
+    if st.button("Enter My Classroom"):
+        st.session_state.user_name = name
+        st.session_state.user_fac = fac
+        st.session_state.user_dept = dept
+        st.session_state.step = "classroom"
+        st.rerun()
+
+# --- THE ACTUAL CLASSROOM ---
 else:
-    if not st.session_state.onboarded:
-        # STEP 1: WELCOME & IDENTITY
-        st.title("👋 Welcome to the Academy")
-        st.session_state.user_name = st.text_input("What is your name, Student?")
-        st.session_state.faculty = st.selectbox("Select Your Faculty:", list(ACADEMY_CONTENT.keys()))
+    st.header(f"👋 Welcome, {st.session_state.user_name}")
+    st.info(f"📍 {st.session_state.user_fac} > {st.session_state.user_dept}")
+    
+    st.subheader("Your Registered Courses")
+    my_courses = NOUN_DATABASE[st.session_state.user_fac][st.session_state.user_dept]
+    
+    # Create rows of courses like a tech app
+    cols = st.columns(len(my_courses))
+    for i, c_code in enumerate(my_courses):
+        with cols[i]:
+            if st.button(f"📖 {c_code}"):
+                st.session_state.current_course = c_code
+                
+    st.divider()
+    
+    if 'current_course' in st.session_state:
+        st.subheader(f"Current Subject: {st.session_state.current_course}")
         
-        if st.button("Initialize My Learning Path"):
-            if st.session_state.user_name:
-                st.session_state.onboarded = True
-                st.balloons()
-                st.rerun()
-    else:
-        # STEP 2: THE PROFESSIONAL DASHBOARD
-        st.title(f"📖 {st.session_state.user_name}'s Classroom")
-        st.write(f"**Faculty:** {st.session_state.faculty} | **Status:** Active Student")
+        tab1, tab2 = st.tabs(["📚 Lessons", "📝 Mock Exam"])
         
-        # Course Selection
-        courses = list(ACADEMY_CONTENT[st.session_state.faculty].keys())
-        selected_course = st.selectbox("Choose a Course to Study:", courses)
-        
-        st.divider()
-        
-        # THE LEARNING INTERFACE
-        col1, col2 = st.columns([1, 1])
-        
-        content = ACADEMY_CONTENT[st.session_state.faculty][selected_course]
-        
-        with col1:
-            st.header("📋 Lesson Plan")
-            # Modules are listed like a real online course
-            for module in content.keys():
-                if module != "Quiz":
-                    with st.expander(f"🔹 {module}"):
-                        st.write(content[module])
-                        st.button(f"Mark {module} as Completed", key=module)
-
-        with col2:
-            st.header("✍️ Module Mock Exam")
-            st.write(f"Test your knowledge on {selected_course}")
+        with tab1:
+            st.write(f"This is where the summary for {st.session_state.current_course} appears.")
+            st.markdown("> **Note:** We are currently adding the 2026 summaries for this course.")
             
-            for i, item in enumerate(content["Quiz"]):
-                st.write(f"**Q{i+1}: {item['q']}**")
-                ans = st.radio("Select Answer:", item['o'], key=f"quiz_{i}")
-                if st.button(f"Check Q{i+1}"):
-                    if ans == item['a']:
-                        st.success("Correct! Well done.")
-                    else:
-                        st.error(f"Wrong. The answer is {item['a']}")
+        with tab2:
+            st.write("### 20-Question Challenge")
+            st.write("Answer the following to test your readiness:")
+            # We will use your 20-question format here
+            st.radio("Question 1: Sample for " + st.session_state.current_course, ["Option A", "Option B", "Option C"])
+            st.button("Submit Exam")
 
-        if st.sidebar.button("Log Out"):
-            st.session_state.onboarded = False
-            st.rerun()
+    if st.button("Change Department/Faculty"):
+        st.session_state.step = "welcome"
+        st.rerun()
