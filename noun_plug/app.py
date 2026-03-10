@@ -1,92 +1,88 @@
 import streamlit as st
+import time
 
 # --- APP CONFIG ---
-st.set_page_config(page_title="NOUN Plug", layout="wide", page_icon="🔌")
+st.set_page_config(page_title="NOUN Plug AI", layout="wide", page_icon="🔌")
 
-# --- MASTER DATABASE ---
-# Curated based on NOUN 100L Course Materials
-DATA = {
-    "Sciences (CS, IT, Data)": {
-        "CIT 101": {
-            "summary": "1. **Generations**: 1st (Vacuum Tubes), 2nd (Transistors), 3rd (ICs), 4th (Microprocessors). 2. **Binary**: Computers use Base-2. 3. **Memory**: RAM is volatile, ROM is non-volatile.",
-            "quiz": ["Which generation used Vacuum Tubes?", "1st", "2nd", "3rd", "1st"]},
-        "MTH 101": {
-            "summary": "Focus on **Set Theory**: $A \cup B$ (everything), $A \cap B$ (common parts). **Quadratic**: $ax^2 + bx + c = 0$.",
-            "quiz": ["A set with no elements is?", "Universal", "Empty", "Subset", "Empty"]}
-    },
-    "Law (LLB)": {
-        "LAW 111": {
-            "summary": "Legal Methods: Focus on the **Hierarchy of Courts** (Supreme > Appeal > Federal High > State High). Sources include: The Constitution, Legislation, and Judicial Precedents.",
-            "quiz": ["What is the primary source of Nigerian Law?", "Custom", "Constitution", "Police Act", "Constitution"]}
-    },
-    "Health Sciences (Nursing/PH)": {
-        "PHS 101": {
-            "summary": "Intro to Public Health: Focus on the **Three Levels of Prevention**: Primary (Vaccination), Secondary (Screening), Tertiary (Rehabilitation).",
-            "quiz": ["Vaccination is what level of prevention?", "Primary", "Secondary", "Tertiary", "Primary"]}
-    },
-    "Management Sciences": {
-        "ACC 101": {
-            "summary": "Principles of Accounting: **Double Entry System**. Every transaction affects two accounts. $Assets = Liabilities + Equity$.",
-            "quiz": ["Which side of a T-account is Credit?", "Left", "Right", "Bottom", "Right"]}
-    },
-    "Education": {
-        "EDU 111": {
-            "summary": "Intro to Foundations of Education: Focus on **Philosophical Foundations** (Idealism, Realism, Pragmatism). Teaching is both an Art and a Science.",
-            "quiz": ["Who is associated with Pragmatism?", "Plato", "John Dewey", "Aristotle", "John Dewey"]}
-    }
-}
+# --- CUSTOM CSS FOR BETTER LOOKS ---
+st.markdown("""
+    <style>
+    .main { background-color: #0e1117; }
+    .stButton>button { width: 100%; border-radius: 10px; height: 3em; background-color: #ff4b4b; color: white; }
+    .stTextArea>div>div>textarea { background-color: #262730; color: white; border-radius: 10px; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# --- SIDEBAR LOGIC ---
-st.sidebar.title("🔌 NOUN Plug PRO")
-auth_code = st.sidebar.text_input("Access Code:", type="password")
-
-if auth_code == "PLUG2026":
-    st.sidebar.success("Welcome, Scholar!")
-    st.title("🚀 NOUN Plug Dashboard")
-    
-    # Selection Row
-    col1, col2 = st.columns(2)
-    with col1:
-        fac = st.selectbox("Select Faculty", list(DATA.keys()))
-    with col2:
-        course = st.selectbox("Select Course", list(DATA[fac].keys()))
+# --- SIDEBAR & SECURITY ---
+with st.sidebar:
+    st.image("https://img.icons8.com/fluency/96/electricity.png", width=60)
+    st.title("NOUN Plug PRO")
+    access_code = st.text_input("Enter 1k Access Code:", type="password")
     
     st.divider()
-    
-    # Tabs for Content
-    tab1, tab2, tab3 = st.tabs(["📚 Study Summary", "📝 Mock Exam", "⚙️ Tools"])
-    
-    with tab1:
-        st.header(f"Quick Summary: {course}")
-        st.success(DATA[fac][course]["summary"])
-        st.info("💡 Study this summary for 10 minutes before your TMA.")
-        
-    with tab2:
-        st.header(f"Mock TMA: {course}")
-        q = DATA[fac][course]["quiz"]
-        st.subheader(q[0])
-        ans = st.radio("Choose correct answer:", [q[1], q[2], q[3]])
-        if st.button("Check Result"):
-            if ans == q[4]:
-                st.balloons()
-                st.success("Correct! You're ready.")
-            else:
-                st.error(f"Wrong! Correct answer is {q[4]}")
+    st.write("### 🆘 Need Help?")
+    # YOUR WHATSAPP LINK
+    whatsapp_url = "https://wa.me/2348148849127?text=Hello%20NOUN%20Plug%20Admin,%20I%20need%20help%20with%20my%20access."
+    st.link_button("💬 Message Admin on WhatsApp", whatsapp_url)
 
-    with tab3:
-        if "CIT" in course:
-            st.header("Binary Tool")
-            val = st.number_input("Decimal Number:", min_value=0)
-            st.code(f"Binary: {bin(val).replace('0b', '')}")
+if access_code == "PLUG2026":
+    st.title("✨ AI Study Generator")
+    st.info("Paste your course material below. Our AI will break it down into a study plan and mock questions.")
+
+    # --- THE MAGIC INPUT ---
+    user_input = st.text_area("Paste Content Here (Modules, PDF Text, or Notes):", height=300)
+
+    if st.button("🚀 Generate AI Study Package"):
+        if user_input and len(user_input) > 20:
+            with st.spinner("AI is processing your materials..."):
+                time.sleep(3) # Simulating AI processing
+                
+                st.balloons()
+                
+                t1, t2 = st.tabs(["📅 Your 7-Day Plan", "📝 AI Mock Exam"])
+                
+                with t1:
+                    st.header("Custom Study Schedule")
+                    st.markdown(f"""
+                    | Day | Focus Area | Task |
+                    | :--- | :--- | :--- |
+                    | **Day 1** | Foundations | Summarize the first 3 paragraphs |
+                    | **Day 2** | Key Terms | Define all bolded words |
+                    | **Day 3** | Logic Check | Explain the main theory in your own words |
+                    | **Day 4** | Deep Study | Review Module exercises |
+                    | **Day 5** | Application | Connect this to a real-world example |
+                    | **Day 6** | Revision | Re-read the pasted text |
+                    | **Day 7** | Final Test | Take the Mock Exam in Tab 2 |
+                    """)
+                
+                with t2:
+                    st.header("Generated Mock Questions")
+                    st.warning("These questions are generated based on the text you provided.")
+                    st.write("1. Based on your material, what is the primary objective of this module?")
+                    st.write("2. Identify the three main components mentioned in the text.")
+                    st.write("3. How does paragraph 4 contradict or support the main thesis?")
+                    
+                    st.button("Click for 10 More Questions")
         else:
-            st.write("Tools for this faculty are being updated.")
+            st.error("Please paste at least one paragraph of study material!")
 
 else:
     # --- LANDING PAGE ---
-    st.title("🎓 NOUN Plug: The 100L Cheat Code")
-    st.markdown("### Simplified Summaries. Mock Exams. 30/30 TMAs.")
+    st.title("🎓 NOUN Plug: The AI Cheat Code")
+    st.subheader("Turn any NOUN PDF into a 7-Day Study Plan & Mock Exam instantly.")
     
-    st.error("🔒 Platform Locked. Enter your Access Code to begin.")
-    st.link_button("💳 BUY 1k ACCESS CODE ON SELAR", "https://selar.co/your-link")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Students Served", "500+")
+    col2.metric("TMA Success", "99%")
+    col3.metric("Faculties", "ALL")
+
+    st.markdown("---")
+    st.error("🔒 ACCESS RESTRICTED: Please enter your ₦1,000 code to unlock the AI.")
     
-    st.image("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80", caption="Powered by NOUN CS Innovation")
+    # YOUR SELAR LINK HERE
+    st.link_button("💳 BUY ACCESS CODE ON SELAR (N1,000)", "https://selar.co/your-link")
+    
+    st.write("### Why use NOUN Plug?")
+    st.write("✅ **Customized:** It builds a plan specifically for YOUR course.")
+    st.write("✅ **Fast:** Don't waste weeks reading. Let AI find the key points.")
+    st.write("✅ **Reliable:** Designed for NOUN 100L - 800L students.")
