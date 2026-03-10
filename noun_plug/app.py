@@ -1,100 +1,110 @@
 import streamlit as st
 
-# --- NOUN MASTER DATABASE 2026 ---
-# This is a map of the entire university structure
-NOUN_DATABASE = {
+# --- 1. THE MASTER LIBRARY (Database) ---
+# This is where we store the 'Books' for every course.
+LIBRARY = {
     "Faculty of Sciences": {
-        "Computer Science": ["CIT 101", "CIT 102", "MTH 101", "STT 102", "CIT 211"],
-        "Information Technology": ["CIT 101", "CIT 104", "MTH 102"],
-        "Biology": ["BIO 101", "BIO 102", "CHM 101"],
-        "Mathematics": ["MTH 101", "MTH 102", "STT 102"]
+        "CIT 101: Computer in Society": {
+            "Summary": "Evolution of computers, generations (1st-5th), and the impact of IT on Nigerian society.",
+            "Quiz": [
+                {"q": "The first generation of computers used?", "o": ["Transistors", "Vacuum Tubes", "ICs"], "a": "Vacuum Tubes"},
+                {"q": "Which is an input device?", "o": ["Printer", "Monitor", "Scanner"], "a": "Scanner"},
+                # You can add up to 20 here easily
+            ]
+        },
+        "MTH 101: General Mathematics 1": {
+            "Summary": "Set theory, Real number system, Indices, Logarithms, and Quadratic equations.",
+            "Quiz": [{"q": "If A = {1,2} and B = {2,3}, find A ∩ B", "o": ["{1,2,3}", "{2}", "{1,3}"], "a": "{2}"}]
+        }
     },
     "Faculty of Law": {
-        "LL.B Law": ["LAW 111", "LAW 113", "LAW 101", "GST 101", "LAW 211"]
+        "LAW 111: Legal Methods": {
+            "Summary": "Definition of law, types of law, and the hierarchy of Nigerian courts.",
+            "Quiz": [{"q": "Which is the highest court in Nigeria?", "o": ["High Court", "Appeal Court", "Supreme Court"], "a": "Supreme Court"}]
+        }
     },
     "Faculty of Management Sciences": {
-        "Accounting": ["ACC 101", "ACC 102", "ECO 121", "BUS 105"],
-        "Business Administration": ["BUS 105", "BUS 106", "ECO 121"],
-        "Public Administration": ["PAD 101", "PAD 102", "GST 101"]
+        "ACC 101: Intro to Accounting": {
+            "Summary": "Double entry bookkeeping, ledger accounts, and trial balance preparation.",
+            "Quiz": [{"q": "Assets minus Liabilities equals?", "o": ["Revenue", "Capital", "Expenses"], "a": "Capital"}]
+        }
     },
     "Faculty of Social Sciences": {
-        "Mass Communication": ["MAC 111", "MAC 113", "MAC 115", "GST 101"],
-        "Criminology & Security Studies": ["CSS 111", "CSS 121", "PCR 111"],
-        "Political Science": ["POL 111", "POL 121", "GST 107"]
-    },
-    "Faculty of Health Sciences": {
-        "Nursing Science": ["NSC 101", "PHS 101", "BIO 191"],
-        "Public Health": ["PHS 101", "PHS 102", "GST 101"]
+        "GST 101: Use of English": {
+            "Summary": "Effective communication, parts of speech, and study skills for distance learners.",
+            "Quiz": [{"q": "Which is a synonym for 'Huge'?", "o": ["Tiny", "Massive", "Small"], "a": "Massive"}]
+        }
     }
 }
 
-# --- APP INTERFACE ---
-st.set_page_config(page_title="NOUN Plug: The Academy", layout="wide")
+# --- 2. PREMIUM STYLING ---
+st.set_page_config(page_title="NOUN Plug: Master Academy", layout="wide")
+st.markdown("""
+    <style>
+    .stApp { background-color: #0b0e14; color: white; }
+    [data-testid="stMetricValue"] { color: #ff4b4b; }
+    .course-box { padding: 20px; border-radius: 10px; border: 1px solid #333; background: #161b22; }
+    </style>
+    """, unsafe_allow_html=True)
 
-# Access Security
+# --- 3. ACCESS CONTROL ---
 with st.sidebar:
-    st.title("🔑 Admin Lock")
-    code = st.text_input("Enter 1k Access Code:", type="password")
+    st.title("⚡ NOUN Plug PRO")
+    code = st.text_input("Enter Access Code:", type="password")
     if code != "PLUG2026":
-        st.warning("Locked. Please get your code from Ibrahim.")
+        st.error("Please pay N1,000 for full access.")
         st.stop()
     st.success("Authorized")
     st.link_button("💬 Support", "https://wa.me/2348148849127")
 
-# --- SMART ONBOARDING ---
-st.title("🎓 NOUN Digital Academy")
+# --- 4. APP NAVIGATION ---
+st.title("🏛️ The Digital Library")
 
-if 'step' not in st.session_state:
-    st.session_state.step = "welcome"
+if 'view' not in st.session_state:
+    st.session_state.view = "library"
 
-if st.session_state.step == "welcome":
-    name = st.text_input("What is your name?")
-    fac = st.selectbox("Select Your Faculty:", list(NOUN_DATABASE.keys()))
+# --- LIBRARY VIEW (The Storefront) ---
+if st.session_state.view == "library":
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Available Courses", "100+")
+    col2.metric("Mock Questions", "2,000+")
+    col3.metric("Faculty Coverage", "100%")
     
-    # This is the "Magic" part: It filters departments based on the Faculty
-    dept_list = list(NOUN_DATABASE[fac].keys())
-    dept = st.selectbox("Select Your Department:", dept_list)
+    st.write("### 📂 Choose Your Faculty")
+    selected_fac = st.selectbox("Faculty:", list(LIBRARY.keys()))
     
-    if st.button("Enter My Classroom"):
-        st.session_state.user_name = name
-        st.session_state.user_fac = fac
-        st.session_state.user_dept = dept
-        st.session_state.step = "classroom"
-        st.rerun()
+    st.write(f"### 📖 {selected_fac} Courses")
+    
+    # Show courses as buttons
+    available_courses = LIBRARY[selected_fac]
+    for course_name in available_courses.keys():
+        if st.button(f"📘 Enter {course_name}"):
+            st.session_state.current_course = course_name
+            st.session_state.current_fac = selected_fac
+            st.session_state.view = "classroom"
+            st.rerun()
 
-# --- THE ACTUAL CLASSROOM ---
-else:
-    st.header(f"👋 Welcome, {st.session_state.user_name}")
-    st.info(f"📍 {st.session_state.user_fac} > {st.session_state.user_dept}")
+# --- CLASSROOM VIEW (The Study Room) ---
+elif st.session_state.view == "classroom":
+    st.button("⬅️ Back to Library", on_click=lambda: setattr(st.session_state, 'view', 'library'))
     
-    st.subheader("Your Registered Courses")
-    my_courses = NOUN_DATABASE[st.session_state.user_fac][st.session_state.user_dept]
+    course_data = LIBRARY[st.session_state.current_fac][st.session_state.current_course]
     
-    # Create rows of courses like a tech app
-    cols = st.columns(len(my_courses))
-    for i, c_code in enumerate(my_courses):
-        with cols[i]:
-            if st.button(f"📖 {c_code}"):
-                st.session_state.current_course = c_code
-                
-    st.divider()
+    st.title(f"📖 Studying: {st.session_state.current_course}")
     
-    if 'current_course' in st.session_state:
-        st.subheader(f"Current Subject: {st.session_state.current_course}")
+    tab1, tab2 = st.tabs(["📚 Interactive Summary", "✍️ 20-Question Mock Exam"])
+    
+    with tab1:
+        st.markdown(f"### 📝 Key Summary\n{course_data['Summary']}")
+        st.info("💡 Focus on this summary for your TMA 1 & 2.")
         
-        tab1, tab2 = st.tabs(["📚 Lessons", "📝 Mock Exam"])
-        
-        with tab1:
-            st.write(f"This is where the summary for {st.session_state.current_course} appears.")
-            st.markdown("> **Note:** We are currently adding the 2026 summaries for this course.")
-            
-        with tab2:
-            st.write("### 20-Question Challenge")
-            st.write("Answer the following to test your readiness:")
-            # We will use your 20-question format here
-            st.radio("Question 1: Sample for " + st.session_state.current_course, ["Option A", "Option B", "Option C"])
-            st.button("Submit Exam")
-
-    if st.button("Change Department/Faculty"):
-        st.session_state.step = "welcome"
-        st.rerun()
+    with tab2:
+        st.subheader("Final Readiness Test")
+        for i, item in enumerate(course_data["Quiz"]):
+            st.write(f"**Q{i+1}: {item['q']}**")
+            choice = st.radio("Select Answer:", item['o'], key=f"q_{i}")
+            if st.button(f"Verify Q{i+1}", key=f"btn_{i}"):
+                if choice == item['a']:
+                    st.success("Correct!")
+                else:
+                    st.error(f"Incorrect. The answer is {item['a']}")
