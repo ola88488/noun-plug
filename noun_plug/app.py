@@ -2,110 +2,107 @@ import streamlit as st
 import time
 
 # --- APP CONFIG ---
-st.set_page_config(page_title="NOUN Plug: My Classroom", layout="wide", page_icon="🎓")
+st.set_page_config(page_title="NOUN Plug: The AI Academy", layout="wide", page_icon="🎓")
 
-# --- INITIALIZE SESSION STATE ---
+# --- INITIALIZE STATE ---
 if 'onboarded' not in st.session_state:
     st.session_state.onboarded = False
-if 'user_name' not in st.session_state:
-    st.session_state.user_name = ""
 
-# --- ACCESS CONTROL ---
+# --- SIDEBAR (Always Visible) ---
 with st.sidebar:
-    st.title("🔑 Security")
-    access_code = st.text_input("Enter 1k Access Code:", type="password")
-    st.divider()
-    if access_code == "PLUG2026":
-        st.success("Access Granted")
-    else:
-        st.warning("Locked")
-        st.stop() # Stops the app here if code is wrong
-
-# --- STEP 1: ONBOARDING MENU ---
-if not st.session_state.onboarded:
-    st.title("🚀 Welcome to NOUN Plug")
-    st.subheader("Let's set up your personalized classroom.")
+    st.image("https://img.icons8.com/fluency/96/brain.png", width=80)
+    st.title("NOUN Plug PRO")
+    access_code = st.text_input("Unlock Full Academy (Code):", type="password")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("What is your name?")
-        faculty = st.selectbox("Select your Faculty:", ["Sciences", "Law", "Management Sciences", "Social Sciences", "Education", "Health Sciences"])
-    with col2:
-        level = st.selectbox("What is your Level?", ["100L", "200L", "300L", "400L", "500L", "800L"])
-        goal = st.selectbox("What is your target GPA?", ["First Class (4.5+)", "2.1 (3.5 - 4.4)", "2.2 (2.4 - 3.4)"])
+    st.divider()
+    st.write("### 🆘 Support")
+    st.link_button("💬 Message Admin", "https://wa.me/2348148849127")
 
-    if st.button("Start Learning Now →"):
-        if name:
-            st.session_state.user_name = name
-            st.session_state.faculty = faculty
-            st.session_state.level = level
-            st.session_state.onboarded = True
-            st.rerun()
-        else:
-            st.error("Please enter your name to continue.")
+# --- LOGIC: WHAT THE USER SEES ---
 
-# --- STEP 2: THE MAIN DASHBOARD (The "Alive" Part) ---
+if access_code != "PLUG2026":
+    # This is the "Public" face of the app
+    st.title("🎓 Welcome to NOUN Plug AI")
+    st.subheader("Your Personal Cyber-Security Style Learning Path")
+    st.image("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000", caption="Level up your grades with AI")
+    
+    st.warning("🔒 Enter your ₦1,000 Access Code in the sidebar to enter your classroom.")
+    st.link_button("💳 Get My Access Code Now", "https://selar.co/your-link")
+
 else:
-    st.title(f"👋 Welcome back, {st.session_state.user_name}!")
-    st.write(f"**Path:** {st.session_state.faculty} | **Level:** {st.session_state.level}")
+    # --- PRIVATE CLASSROOM (Once code is entered) ---
     
-    # --- DYNAMIC COURSE GENERATION ---
-    st.header("📚 Your Learning Path")
-    
-    # Simulating a professional "Learning Card" look
-    courses = {
-        "Sciences": ["CIT 101", "MTH 101", "STT 102", "PHY 191"],
-        "Law": ["LAW 111", "LAW 113", "GST 101", "LAW 101"],
-        "Management Sciences": ["ACC 101", "BUS 105", "ECO 121", "GST 107"]
-    }.get(st.session_state.faculty, ["GST 101", "GST 102", "GST 107"])
-
-    cols = st.columns(len(courses))
-    
-    for i, course_code in enumerate(courses):
-        with cols[i]:
-            with st.container(border=True):
-                st.subheader(course_code)
-                st.write("Progress: 0%")
-                if st.button(f"Enter {course_code}", key=course_code):
-                    st.session_state.current_course = course_code
-    
-    st.divider()
-
-    # --- THE TEACHING INTERFACE (Cyber Security Style) ---
-    if 'current_course' in st.session_state:
-        st.header(f"📍 Currently Studying: {st.session_state.current_course}")
+    if not st.session_state.onboarded:
+        st.title("🚀 Creating Your Profile...")
+        name = st.text_input("Enter your Full Name:", placeholder="e.g. Olabamidele Ibrahim")
+        fac = st.selectbox("Your Faculty:", ["Sciences", "Law", "Management", "Social Sciences", "Arts"])
+        lvl = st.radio("Current Level:", ["100L", "200L", "300L", "MSc/PhD"], horizontal=True)
         
-        tab1, tab2, tab3 = st.tabs(["📖 Lessons", "🧠 Interactive Lab", "📝 Final Mock Exam"])
+        if st.button("Initialize My Classroom →"):
+            if name:
+                st.session_state.user_name = name
+                st.session_state.faculty = fac
+                st.session_state.level = lvl
+                st.session_state.onboarded = True
+                st.balloons()
+                st.rerun()
+            else:
+                st.error("We need your name to personalize your certificates!")
+
+    else:
+        # --- THE MAIN TEACHING DASHBOARD ---
+        st.title(f"👨‍💻 Cadet {st.session_state.user_name}: Active")
+        st.write(f"**Current Sector:** {st.session_state.faculty} | **Rank:** {st.session_state.level}")
         
-        with tab1:
-            st.markdown(f"""
-            ### Module 1: Introduction to {st.session_state.current_course}
-            In this section, you will learn the fundamental principles required for your TMA.
+        st.divider()
+        
+        # Dashboard Layout
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            st.subheader("🛠️ Course Ops")
+            # Dynamic courses based on faculty
+            courses = {
+                "Sciences": ["CIT 101", "MTH 101", "PHY 191"],
+                "Law": ["LAW 111", "LAW 113", "GST 101"],
+                "Management": ["ACC 101", "BUS 105", "ECO 121"]
+            }.get(st.session_state.faculty, ["GST 101", "GST 102"])
             
-            **Key Concept:** The most important thing to remember is...
-            """)
-            st.info("💡 Pro Tip: 80% of exam questions come from this paragraph.")
+            chosen_course = st.selectbox("Select Target Course:", courses)
             
-        with tab2:
-            st.subheader("Interactive Lab")
-            st.write("Paste a paragraph from your material to generate a breakdown:")
-            ai_input = st.text_area("Drop text here...", height=100)
-            if st.button("Analyze Content"):
-                with st.spinner("Breaking it down..."):
-                    time.sleep(2)
-                    st.success("Concept Simplified: This means that...")
+            st.write("---")
+            st.write("### 🌩️ AI Upload")
+            st.write("Paste your course material to generate the lesson:")
+            material = st.text_area("Drop PDF text here...", height=150)
+            generate = st.button("Analyze & Teach Me")
 
-        with tab3:
-            st.subheader("Exam Readiness Test")
-            st.write("Test your knowledge before the real TMA.")
-            q1 = st.radio("Sample Question: Which of these is a primary source?", ["Option A", "Option B", "Option C"])
-            if st.button("Submit Answer"):
-                st.write("Processing result...")
+        with col2:
+            if 'teaching' in st.session_state or generate:
+                st.session_state.teaching = True
+                st.header(f"📖 Lesson: {chosen_course}")
+                
+                tab1, tab2 = st.tabs(["🚀 Automated Study Plan", "🧠 Interactive Mock Exam"])
+                
+                with tab1:
+                    st.success(f"AI Analysis Complete for {st.session_state.user_name}")
+                    st.markdown("""
+                    ### 🎯 Your 24-Hour Blitz Plan
+                    * **0-2 Hours:** Focus on the 'Introduction' and 'Definition' sections.
+                    * **2-6 Hours:** Study the 3 key pillars mentioned in your text.
+                    * **6-10 Hours:** Attempt the Mock Exam in Tab 2.
+                    """)
+                    
+                with tab2:
+                    st.subheader("Final Readiness Check")
+                    st.write("The AI has prepared these questions based on your material:")
+                    st.info("Question 1: Define the core principle of the first paragraph.")
+                    st.radio("Your Answer:", ["Correct Definition", "Partial Definition", "Incorrect"], key="q1")
+                    if st.button("Submit for Grading"):
+                        st.write("Analysis in progress...")
+            else:
+                st.info("Select a course and paste your material on the left to begin your mission.")
 
-    # --- SIDEBAR SUPPORT ---
-    st.sidebar.divider()
-    whatsapp_url = "https://wa.me/2348148849127?text=Hi%20Admin,%20I'm%20on%20the%20app!"
-    st.sidebar.link_button("💬 Chat with Admin", whatsapp_url)
-    if st.sidebar.button("Log Out / Reset"):
-        st.session_state.onboarded = False
-        st.rerun()
+        # Logout Option
+        if st.sidebar.button("Log Out / Reset System"):
+            st.session_state.onboarded = False
+            st.rerun()
